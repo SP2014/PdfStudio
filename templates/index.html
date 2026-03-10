@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDF Crop & Layout Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">✂</div>
+    <div>
+      <div class="logo-name">PDF Crop &amp; Layout Studio</div>
+      <div class="logo-sub">Vector-accurate · Server-powered · Industry-grade</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-dot" id="server-status"></div>
+    <span class="status-text" id="server-text">Connected</span>
+  </div>
+</header>
+
+<!-- STEP PROGRESS -->
+<nav class="step-nav">
+  <div class="step-item active" id="step-item-1" onclick="UI.goStep(1)">
+    <div class="step-circle">1</div>
+    <div class="step-label">Upload PDF</div>
+  </div>
+  <div class="step-connector"></div>
+  <div class="step-item" id="step-item-2" onclick="UI.goStep(2)">
+    <div class="step-circle">2</div>
+    <div class="step-label">Crop Region</div>
+  </div>
+  <div class="step-connector"></div>
+  <div class="step-item" id="step-item-3" onclick="UI.goStep(3)">
+    <div class="step-circle">3</div>
+    <div class="step-label">Layout &amp; Export</div>
+  </div>
+</nav>
+
+<main class="app-body">
+
+  <!-- ══════════════════ STEP 1: UPLOAD ══════════════════ -->
+  <section class="panel active" id="panel-1">
+    <div class="upload-center">
+      <div class="upload-card">
+        <div class="upload-hero">
+          <span class="upload-hero-icon">⬡</span>
+          <h1 class="upload-title">PDF Crop &amp; Layout Studio</h1>
+          <p class="upload-desc">Upload any PDF, draw a precise crop region, then arrange multiple copies in a professional layout — all processed server-side with vector fidelity.</p>
+        </div>
+        <div class="drop-zone" id="drop-zone">
+          <div class="drop-inner" onclick="document.getElementById('file-input').click()">
+            <div class="drop-icon">📁</div>
+            <div class="drop-primary">Drop your PDF here</div>
+            <div class="drop-secondary">or <span class="link">click to browse</span> · Max 50MB</div>
+          </div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf" style="display:none">
+
+        <div class="upload-progress" id="upload-progress" style="display:none">
+          <div class="prog-label" id="prog-label">Uploading…</div>
+          <div class="prog-track"><div class="prog-fill" id="prog-fill"></div></div>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-item">
+            <span class="fi-icon">✂</span>
+            <div class="fi-text">
+              <strong>Interactive Crop</strong>
+              Draw or type exact dimensions in mm/px/inches
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="fi-icon">⊞</span>
+            <div class="fi-text">
+              <strong>Custom Grid Layouts</strong>
+              Any rows × cols arrangement on any page size
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="fi-icon">⬇</span>
+            <div class="fi-text">
+              <strong>Vector PDF Export</strong>
+              Server-rendered, print-ready at any resolution
+            </div>
+          </div>
+          <div class="feature-item">
+            <span class="fi-icon">🔒</span>
+            <div class="fi-text">
+              <strong>Secure Processing</strong>
+              Files auto-deleted after session ends
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ STEP 2: CROP ══════════════════ -->
+  <section class="panel" id="panel-2">
+    <aside class="sidebar" id="crop-sidebar">
+
+      <!-- Page selector -->
+      <div class="sb-section">
+        <div class="sb-label">Document</div>
+        <div class="file-info" id="file-info"></div>
+        <select class="ctrl-select" id="page-select" onchange="Crop.changePage(parseInt(this.value))"></select>
+      </div>
+
+      <!-- Unit toggle -->
+      <div class="sb-section">
+        <div class="sb-label">Dimensions Unit</div>
+        <div class="seg-ctrl">
+          <button class="seg-btn active" onclick="Crop.setUnit('mm')" data-unit="mm">mm</button>
+          <button class="seg-btn" onclick="Crop.setUnit('px')" data-unit="px">px</button>
+          <button class="seg-btn" onclick="Crop.setUnit('in')" data-unit="in">in</button>
+        </div>
+      </div>
+
+      <!-- Manual crop inputs -->
+      <div class="sb-section">
+        <div class="sb-label">Crop Region</div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label">X (left)</label>
+            <input class="ctrl-input" type="number" id="inp-x" step="0.1" placeholder="0" oninput="Crop.applyManual()">
+          </div>
+          <div class="field">
+            <label class="field-label">Y (top)</label>
+            <input class="ctrl-input" type="number" id="inp-y" step="0.1" placeholder="0" oninput="Crop.applyManual()">
+          </div>
+          <div class="field">
+            <label class="field-label">Width</label>
+            <input class="ctrl-input" type="number" id="inp-w" step="0.1" placeholder="210" oninput="Crop.applyManual()">
+          </div>
+          <div class="field">
+            <label class="field-label">Height</label>
+            <input class="ctrl-input" type="number" id="inp-h" step="0.1" placeholder="297" oninput="Crop.applyManual()">
+          </div>
+        </div>
+
+        <!-- Quick presets -->
+        <div class="sb-label" style="margin-top:12px">Quick Presets</div>
+        <div class="preset-wrap" id="preset-wrap"></div>
+      </div>
+
+      <!-- Zoom -->
+      <div class="sb-section">
+        <div class="sb-label">Canvas Zoom</div>
+        <div class="slider-row">
+          <input type="range" id="zoom-range" min="30" max="220" value="100" oninput="Crop.setZoom(this.value)">
+          <span class="slider-val" id="zoom-label">100%</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button class="btn-ghost sm" onclick="Crop.fitView()">Fit</button>
+          <button class="btn-ghost sm" onclick="Crop.zoom100()">100%</button>
+          <button class="btn-ghost sm" onclick="Crop.selectAll()">All</button>
+        </div>
+      </div>
+
+      <!-- Crop info -->
+      <div class="sb-section">
+        <div class="sb-label">Selection</div>
+        <div class="crop-stats" id="crop-stats">
+          <div class="stat-row"><span class="stat-key">Width</span><span class="stat-val" id="stat-w">—</span></div>
+          <div class="stat-row"><span class="stat-key">Height</span><span class="stat-val" id="stat-h">—</span></div>
+          <div class="stat-row"><span class="stat-key">X offset</span><span class="stat-val" id="stat-x">—</span></div>
+          <div class="stat-row"><span class="stat-key">Y offset</span><span class="stat-val" id="stat-y">—</span></div>
+          <div class="stat-row"><span class="stat-key">Aspect</span><span class="stat-val" id="stat-ar">—</span></div>
+        </div>
+      </div>
+
+      <div class="sb-spacer"></div>
+      <div class="sb-section">
+        <button class="btn-ghost sm full" onclick="Crop.reset()" style="margin-bottom:8px">✕ Clear selection</button>
+        <button class="btn-primary full" id="btn-next-layout" disabled onclick="UI.goStep(3)">
+          Continue to Layout →
+        </button>
+      </div>
+    </aside>
+
+    <div class="canvas-area">
+      <div class="canvas-toolbar">
+        <div class="ctb-info" id="ctb-info">Load a PDF to begin cropping</div>
+        <div class="ctb-right">
+          <kbd class="kbd-hint">Drag to crop</kbd>
+          <kbd class="kbd-hint">Handles to resize</kbd>
+          <kbd class="kbd-hint">Drag box to move</kbd>
+        </div>
+      </div>
+
+      <div class="canvas-viewport" id="canvas-viewport">
+        <div class="stage-wrap" id="stage-wrap" style="display:none">
+          <div class="crop-stage" id="crop-stage">
+            <img id="pdf-preview" alt="PDF Preview" draggable="false">
+            <!-- Crop overlay rendered by JS -->
+            <div id="crop-overlay"></div>
+          </div>
+        </div>
+        <div class="empty-canvas" id="empty-canvas">
+          <div class="ec-icon">📄</div>
+          <div class="ec-msg">Your PDF preview will appear here</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ STEP 3: LAYOUT ══════════════════ -->
+  <section class="panel" id="panel-3">
+    <aside class="sidebar">
+
+      <!-- Grid config -->
+      <div class="sb-section">
+        <div class="sb-label">Grid Layout</div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label">Columns</label>
+            <input class="ctrl-input" type="number" id="lay-cols" min="1" max="8" value="2" oninput="Layout.update()">
+          </div>
+          <div class="field">
+            <label class="field-label">Rows</label>
+            <input class="ctrl-input" type="number" id="lay-rows" min="1" max="8" value="2" oninput="Layout.update()">
+          </div>
+        </div>
+        <!-- Quick layout presets -->
+        <div class="sb-label" style="margin-top:12px">Quick Layouts</div>
+        <div class="layout-preset-grid" id="layout-preset-grid"></div>
+      </div>
+
+      <!-- Output size -->
+      <div class="sb-section">
+        <div class="sb-label">Output Page</div>
+        <select class="ctrl-select" id="out-size" onchange="Layout.update()">
+          <option value="A4">A4 — 210 × 297 mm</option>
+          <option value="A3">A3 — 297 × 420 mm</option>
+          <option value="Letter">US Letter — 216 × 279 mm</option>
+          <option value="A5">A5 — 148 × 210 mm</option>
+        </select>
+        <div class="seg-ctrl" style="margin-top:8px">
+          <button class="seg-btn active" onclick="Layout.setOrient('portrait')" data-orient="portrait">Portrait</button>
+          <button class="seg-btn" onclick="Layout.setOrient('landscape')" data-orient="landscape">Landscape</button>
+        </div>
+      </div>
+
+      <!-- Spacing -->
+      <div class="sb-section">
+        <div class="sb-label">Spacing</div>
+        <div class="grid-2">
+          <div class="field">
+            <label class="field-label">Margin (mm)</label>
+            <input class="ctrl-input" type="number" id="lay-margin" min="0" max="40" value="5" step="0.5" oninput="Layout.update()">
+          </div>
+          <div class="field">
+            <label class="field-label">Gutter (mm)</label>
+            <input class="ctrl-input" type="number" id="lay-gutter" min="0" max="20" value="3" step="0.5" oninput="Layout.update()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div class="sb-section">
+        <div class="sb-label">Options</div>
+        <label class="check-row">
+          <input type="checkbox" id="opt-ar" checked onchange="Layout.update()">
+          <span>Maintain aspect ratio</span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="opt-center" checked onchange="Layout.update()">
+          <span>Center items in cell</span>
+        </label>
+        <label class="check-row">
+          <input type="checkbox" id="opt-cutlines" onchange="Layout.update()">
+          <span>Add cut / crop marks</span>
+        </label>
+      </div>
+
+      <!-- Summary -->
+      <div class="sb-section">
+        <div class="sb-label">Output Summary</div>
+        <div class="layout-summary" id="layout-summary"></div>
+      </div>
+
+      <div class="sb-spacer"></div>
+      <div class="sb-section" style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn-ghost sm full" onclick="UI.goStep(2)">← Back to Crop</button>
+        <button class="btn-export full" id="btn-export" onclick="Layout.export()">
+          <span class="btn-export-icon">⬇</span> Export PDF
+        </button>
+      </div>
+    </aside>
+
+    <div class="canvas-area">
+      <div class="canvas-toolbar">
+        <div class="ctb-info" id="layout-ctb-info">Live layout preview</div>
+        <div class="ctb-right">
+          <span class="badge" id="copy-badge">0 copies</span>
+        </div>
+      </div>
+      <div class="canvas-viewport layout-viewport">
+        <div id="layout-preview-container">
+          <div class="sheet-meta" id="sheet-meta"></div>
+          <div class="a4-sheet" id="a4-sheet"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
